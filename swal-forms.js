@@ -1,9 +1,9 @@
 ;(function () {
-  var warnTextNode
+  var warnTextNode, _this;
   // extend swal with a function for adding forms
   swal.withForm = function () {
     // initialize with field values supplied on `swal.withForm` call
-    var swalForm = new SwalForm(arguments[0].formFields)
+    var swalForm = new SwalForm(arguments[0].formFields, arguments[0].callbackOnRequiredFailed)
     // prevent successive calls to add duplicated form fields
     swalForm.removeSwalForm()
     // make form values inserted by the user available at `doneFunction`
@@ -22,7 +22,9 @@
 
   // constructor for helper object
   function SwalForm (formFields) {
+    _this = this;
     this.formFields = formFields
+    this.requiredErrors = [];
   }
 
   // helper methods
@@ -51,6 +53,7 @@
       swalArgs[1] = function (isConfirm) {
         // make form values available at `this` variable inside doneFunction
         this.swalForm = swalFormInstance.getFormValues(isConfirm)
+        this.requiredErrors = _this.requiredErrors;
 
         if (doneFunction.apply(this, arguments) !== false) {
           // clean form to not interfere in normals sweet alerts
@@ -75,11 +78,11 @@
         var attr = {}
         attr[tag.id || tag.name] = tag.value
         if (isConfirm && tag.dataset.swalFormsRequired && !tag.value) {
-          var warnMsg = 'Missing required attribute: ' + (tag.name || tag.id)
-          warnTextNode && warnTextNode.remove && warnTextNode.remove()
-          warnTextNode = document.createTextNode(warnMsg)
-          document.querySelector('.swal-form').appendChild(warnTextNode)
-          throw new Error(warnMsg)
+          // var warnMsg = 'Missing required attribute: ' + (tag.name || tag.id)
+          // warnTextNode && warnTextNode.remove && warnTextNode.remove()
+          // warnTextNode = document.createTextNode(warnMsg)
+          // document.querySelector('.swal-form').appendChild(warnTextNode)
+          _this.requiredErrors.push(tag.id || tag.name);
         }
         return attr
       }
